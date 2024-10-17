@@ -48,13 +48,17 @@ int JudgmentList(SqList* L);
 int LengthList(SqList* L);
 
 /**
- * @brief Returns the element at the specified position in the list.
+ * @brief Retrieves the element at the specified position in the list.
+ *
+ * Searches for the element at position `i` (1-based index) in the list `L`.
+ * The result is returned through a pointer argument, and a status code is returned to indicate success or failure.
  *
  * @param L Pointer to the list.
  * @param i The position (1-based index) of the element to retrieve.
- * @return The element at the specified position.
+ * @param result Pointer to store the element if found.
+ * @return TRUE if the element exists at the specified position, FALSE if the position is invalid.
  */
-ElemType OrderNum(SqList* L, int i);
+int OrderNum(SqList* L, int i, ElemType* result);
 
 /**
  * @brief Expands the size of the list by a defined increment.
@@ -62,8 +66,9 @@ ElemType OrderNum(SqList* L, int i);
  * Allocates additional memory to the list to allow for more elements.
  *
  * @param L Pointer to the list.
+ * @return TRUE if expansion is successful, otherwise FALSE.
  */
-void ExpandList(SqList* L);
+int ExpandList(SqList* L);
 
 /**
  * @brief Shrinks the size of the list by a defined decrement if necessary.
@@ -71,8 +76,9 @@ void ExpandList(SqList* L);
  * Releases excess memory if the list's capacity is much larger than its length.
  *
  * @param L Pointer to the list.
+ * @return TRUE if shrinkage is successful, otherwise FALSE.
  */
-void ShrinkList(SqList* L);
+int ShrinkList(SqList* L);
 
 /**
  * @brief Inserts an element at the specified position in the list.
@@ -82,8 +88,9 @@ void ShrinkList(SqList* L);
  * @param L Pointer to the list.
  * @param i The position (1-based index) at which to insert the element.
  * @param e The element to be inserted.
+ * @return TRUE if insertion is successful, otherwise FALSE.
  */
-void ListInsert(SqList* L, int i, ElemType e);
+int ListInsert(SqList* L, int i, ElemType e);
 
 /**
  * @brief Deletes the element at the specified position in the list.
@@ -92,33 +99,42 @@ void ListInsert(SqList* L, int i, ElemType e);
  *
  * @param L Pointer to the list.
  * @param i The position (1-based index) of the element to delete.
+ * @return TRUE if deletion is successful, otherwise FALSE.
  */
-void ListDelete(SqList* L, int i);
+int ListDelete(SqList* L, int i);
 
 /**
  * @brief Returns the predecessor of the specified element in the list.
  *
+ * Searches for the element `e` in the list `L` and, if found, returns its predecessor.
+ * The result is returned through a pointer argument, and a status code is returned to indicate success or failure.
+ *
  * @param L Pointer to the list.
  * @param e The element whose predecessor is to be found.
- * @return The predecessor element, or -1 if none exists.
+ * @param result Pointer to store the predecessor element, if found.
+ * @return TRUE if the predecessor exists, FALSE if the element is not found or has no predecessor.
  */
-ElemType PriorElem(SqList* L, ElemType e);
+int PriorElem(SqList* L, ElemType e, ElemType* result);
 
 /**
  * @brief Returns the successor of the specified element in the list.
  *
+ * Searches for the element `e` in the list `L` and, if found, returns its successor.
+ * The result is returned through a pointer argument, and a status code is returned to indicate success or failure.
+ *
  * @param L Pointer to the list.
  * @param e The element whose successor is to be found.
- * @return The successor element, or -1 if none exists.
+ * @param result Pointer to store the successor element, if found.
+ * @return TRUE if the successor exists, FALSE if the element is not found or has no successor.
  */
-ElemType GetNextElem(SqList* L, ElemType e);
+int GetNextElem(SqList* L, ElemType e, ElemType* result);
 
 /**
  * @brief Locates an element in the list and returns its position.
  *
  * @param L Pointer to the list.
  * @param e The element to locate.
- * @return The position (1-based index) of the element, or -1 if not found.
+ * @return The position (1-based index) of the element, or FALSE if not found.
  */
 int LocateElem(SqList* L, ElemType e);
 
@@ -156,5 +172,14 @@ void Swap(ElemType* a, ElemType* b);
  * @param L Pointer to the list.
  */
 void ChangeNums(SqList* L);
+
+/**
+ * @brief Prints all elements in the list.
+ *
+ * Iterates through the list `L` and prints each element.
+ *
+ * @param L Pointer to the list.
+ */
+void PrintList(SqList* L);
 
 #endif

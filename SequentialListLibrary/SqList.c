@@ -45,19 +45,25 @@ int LengthList(SqList* L) {
 }
 
 /**
- * @brief Returns the element at the specified position in the list.
+ * @brief Retrieves the element at the specified position in the list.
+ *
+ * Searches for the element at position `i` (1-based index) in the list `L`.
+ * The result is returned through a pointer argument, and a status code is returned to indicate success or failure.
  *
  * @param L Pointer to the list.
  * @param i The position (1-based index) of the element to retrieve.
- * @return The element at the specified position.
+ * @param result Pointer to store the element if found.
+ * @return TRUE if the element exists at the specified position, FALSE if the position is invalid.
  */
-ElemType OrderNum(SqList* L, int i) {
+int OrderNum(SqList* L, int i, ElemType* result) {
     if (i < 1 || i > L->length) {
         printf("Invalid position\n");
-        return -1; // Return -1 to indicate an error
+        return FALSE;
     }
-    return L->elem[i - 1];
+    *result = L->elem[i - 1];
+    return TRUE;
 }
+
 
 /**
  * @brief Expands the size of the list by a defined increment.
@@ -65,16 +71,18 @@ ElemType OrderNum(SqList* L, int i) {
  * Allocates additional memory to the list to allow for more elements.
  *
  * @param L Pointer to the list.
+ * @return TRUE if expansion is successful, otherwise FALSE.
  */
-void ExpandList(SqList* L) {
+int ExpandList(SqList* L) {
     ElemType* newbase = (ElemType*)realloc(L->elem, (L->listsize + LISTINCREMENT) * sizeof(ElemType));
     if (!newbase) {
         printf("Expansion failed\n");
-        return;
+        return FALSE;
     }
     L->elem = newbase;
     L->listsize += LISTINCREMENT;
     printf("Expansion successful, new capacity: %d\n", L->listsize);
+    return TRUE;
 }
 
 /**
@@ -83,18 +91,21 @@ void ExpandList(SqList* L) {
  * Releases excess memory if the list's capacity is much larger than its length.
  *
  * @param L Pointer to the list.
+ * @return TRUE if shrinkage is successful, otherwise FALSE.
  */
-void ShrinkList(SqList* L) {
+int ShrinkList(SqList* L) {
     if (L->listsize - LISTDECREMENT >= L->length) {
         ElemType* newbase = (ElemType*)realloc(L->elem, (L->listsize - LISTDECREMENT) * sizeof(ElemType));
         if (!newbase) {
             printf("Shrinkage failed\n");
-            return;
+            return FALSE;
         }
         L->elem = newbase;
         L->listsize -= LISTDECREMENT;
         printf("Shrinkage successful, new capacity: %d\n", L->listsize);
+        return TRUE;
     }
+    return FALSE;
 }
 
 /**
@@ -105,15 +116,19 @@ void ShrinkList(SqList* L) {
  * @param L Pointer to the list.
  * @param i The position (1-based index) at which to insert the element.
  * @param e The element to be inserted.
+ * @return TRUE if the insertion is successful, otherwise FALSE.
  */
-void ListInsert(SqList* L, int i, ElemType e) {
+int ListInsert(SqList* L, int i, ElemType e) {
     if (i < 1 || i > L->length + 1) {
         printf("Invalid insertion position\n");
-        return;
+        return FALSE;
     }
     // Check if expansion is needed
     if (L->length >= L->listsize) {
-        ExpandList(L);
+        if (ExpandList(L) == FALSE) {
+            printf("Failed to expand the list during insertion\n");
+            return FALSE;
+        }
     }
     ElemType* q = &(L->elem[i - 1]);
     ElemType* p = &(L->elem[L->length - 1]);
@@ -122,6 +137,7 @@ void ListInsert(SqList* L, int i, ElemType e) {
     }
     *q = e;
     L->length++;
+    return TRUE;
 }
 
 /**
@@ -131,72 +147,79 @@ void ListInsert(SqList* L, int i, ElemType e) {
  *
  * @param L Pointer to the list.
  * @param i The position (1-based index) of the element to delete.
+ * @return TRUE if the deletion is successful, otherwise FALSE.
  */
-void ListDelete(SqList* L, int i) {
+int ListDelete(SqList* L, int i) {
     if (i < 1 || i > L->length) {
         printf("Invalid deletion position\n");
-        return;
+        return FALSE;
     }
-    ElemType* p = &(L->elem[i - 1]);
-    ElemType* q = &(L->elem[L->length - 1]);
-    for (++p; p <= q; ++p) {
-        *(p - 1) = *p;
+    ElemType* q = &(L->elem[i - 1]);
+    ElemType* p = &(L->elem[L->length - 1]);
+    for (++q; q <= p; ++q) {
+        *(q - 1) = *q;
     }
     L->length--;
     // Check if shrinkage is needed
     if (L->listsize - LISTDECREMENT >= LIST_INIT_SIZE && L->length <= L->listsize - LISTINCREMENT) {
-        ShrinkList(L);
+        if (ShrinkList(L) == FALSE) {
+            printf("Failed to shrink the list during deletion\n");
+            return FALSE;
+        }
     }
+    return TRUE;
 }
 
 /**
  * @brief Returns the predecessor of the specified element in the list.
  *
+ * Searches for the element `e` in the list `L` and, if found, returns its predecessor.
+ * The result is returned through a pointer argument, and a status code is returned to indicate success or failure.
+ *
  * @param L Pointer to the list.
  * @param e The element whose predecessor is to be found.
- * @return The predecessor element, or -1 if none exists.
+ * @param result Pointer to store the predecessor element, if found.
+ * @return TRUE if the predecessor exists, FALSE if the element is not found or has no predecessor.
  */
-ElemType PriorElem(SqList* L, ElemType e) {
-    int found = 0;
+int PriorElem(SqList* L, ElemType e, ElemType* result) {
     for (int i = 0; i < L->length; i++) {
         if (L->elem[i] == e) {
-            found = 1;
             if (i == 0) {
                 printf("No predecessor exists for this element\n");
-                return -1;
+                return FALSE;
             }
-            return L->elem[i - 1];
+            *result = L->elem[i - 1];
+            return TRUE;
         }
     }
-    if (!found) {
-        printf("Element not found\n");
-        return -1;
-    }
+    printf("Element not found\n");
+    return FALSE;
 }
 
 /**
  * @brief Returns the successor of the specified element in the list.
  *
+ * Searches for the element `e` in the list `L` and, if found, returns its successor.
+ * The result is returned through a pointer argument, and a status code is returned to indicate success or failure.
+ *
  * @param L Pointer to the list.
  * @param e The element whose successor is to be found.
- * @return The successor element, or -1 if none exists.
+ * @param result Pointer to store the successor element, if found.
+ * @return TRUE if the successor exists, FALSE if the element is not found or has no successor.
  */
-ElemType NextElem(SqList* L, ElemType e) {
-    int found = 0;
+int NextElem(SqList* L, ElemType e, ElemType* result) {
     for (int i = 0; i < L->length; i++) {
         if (L->elem[i] == e) {
-            found = 1;
             if (i == L->length - 1) {
                 printf("No successor exists for this element\n");
-                return -1;
+                return FALSE;
             }
-            return L->elem[i + 1];
+            *result = L->elem[i + 1];
+            return TRUE;
         }
     }
-    if (!found) {
-        printf("Element not found\n");
-        return -1;
-    }
+    printf("Element not found\n");
+    return FALSE;
 }
 
 /**
@@ -204,7 +227,7 @@ ElemType NextElem(SqList* L, ElemType e) {
  *
  * @param L Pointer to the list.
  * @param e The element to locate.
- * @return The position (1-based index) of the element, or -1 if not found.
+ * @return The position (1-based index) of the element, or FALSE if not found.
  */
 int LocateElem(SqList* L, ElemType e) {
     for (int i = 0; i < L->length; i++) {
@@ -213,7 +236,7 @@ int LocateElem(SqList* L, ElemType e) {
         }
     }
     printf("Element not found\n");
-    return -1;
+    return FALSE;
 }
 
 /**
@@ -281,4 +304,23 @@ void ChangeNums(SqList* L) {
             Swap(&L->elem[left], &L->elem[right]);
         }
     }
+}
+
+/**
+ * @brief Prints all elements in the list.
+ *
+ * Iterates through the list `L` and prints each element.
+ *
+ * @param L Pointer to the list.
+ */
+void PrintList(SqList* L) {
+    if (L == NULL || L->length == 0) {
+        printf("The list is empty or does not exist\n");
+        return;
+    }
+    printf("Elements in the list: ");
+    for (int i = 0; i < L->length; i++) {
+        printf("%d ", L->elem[i]);
+    }
+    printf("\n");
 }
